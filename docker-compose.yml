@@ -1,0 +1,71 @@
+version: '3.9'
+
+services:
+  mongodb:
+    image: mongo:5.0
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+
+  nats:
+    image: nats
+    container_name: nats
+    ports:
+      - "4222:4222"
+
+  service-a:
+    build:
+      context: ./service-a
+    container_name: service-a
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./service-a:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - mongodb
+      - redis
+      - nats
+    environment:
+      DATABASE_URI: mongodb://admin:password@mongodb:27017/service_a?authSource=admin
+      REDIS_HOST: redis
+      NATS_URL: nats://nats:4222
+      PORT: 3000
+    command: npm run start:dev  # Use nodemon for hot-reloading
+
+  service-b:
+    build:
+      context: ./service-b
+    container_name: service-b
+    ports:
+      - "3002:3000"
+    volumes:
+      - ./service-b:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - mongodb
+      - redis
+      - nats
+    environment:
+      DATABASE_URI: mongodb://admin:password@mongodb:27017/service_b?authSource=admin
+      REDIS_HOST: redis
+      NATS_URL: nats://nats:4222
+      PORT: 3000
+    command: npm run start:dev  # Use nodemon for hot-reloading
+
+volumes:
+  mongo_data:
+  redis_data:
