@@ -8,7 +8,6 @@ import {
 } from '@nestjs/microservices';
 import { Db } from 'mongodb';
 import { firstValueFrom } from 'rxjs';
-import { createClient } from 'redis';
 import { TDBRecord, TNewDBRecord } from './types';
 import { externalApiEntryToRecord } from './utils/object.transformers';
 
@@ -109,40 +108,8 @@ export class PublicApiService {
     };
   }
 
-  async logRequest(query: string, executionTime: number) {
-    const redisClient = await this.redisClient();
-    const key = `timeseries:requests:${query}`;
-    const timestamp = Date.now();
-    await redisClient.sendCommand([
-      'TS.ADD',
-      key,
-      timestamp.toString(),
-      executionTime.toString(),
-    ]);
-  }
-
   async getRequestLogs(query: string) {
-    const redisClient = await this.redisClient();
-    const key = `timeseries:requests:${query}`;
-    const range: [string, string][] = await redisClient.sendCommand([
-      'TS.RANGE',
-      key,
-      '-',
-      '+',
-    ]);
-    return range.map(([timestamp, value]) => ({
-      timestamp,
-      executionTime: value,
-    }));
-  }
-
-  private async redisClient() {
-    //TODO: cache the client
-    const client = createClient({
-      url: `redis://${process.env.REDIS_HOST}:6379`,
-    });
-    await client.connect();
-    return client;
+    return;
   }
 
   //TODO: think about other indexes

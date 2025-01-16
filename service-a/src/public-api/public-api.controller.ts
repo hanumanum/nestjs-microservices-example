@@ -108,32 +108,6 @@ export class PublicApiController {
     );
   }
 
-  @Get('log')
-  //TODO: review this method and logic, seems it is not feet for the purpose
-  @ApiOperation({
-    summary: 'Log a request',
-    description: 'Logs the execution time of a request to RedisTimeSeries',
-  })
-  @ApiQuery({
-    name: 'q',
-    type: String,
-    description: 'Search query to log',
-    example: 'NestJS',
-  })
-  @ApiQuery({
-    name: 'time',
-    type: Number,
-    description: 'Execution time in milliseconds',
-    example: 200,
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'Request logged successfully',
-  })
-  async logRequest(@Query('q') query: string, @Query('time') time: number) {
-    return await this.publicApiService.logRequest(query, time);
-  }
-
   @Get('logs')
   @ApiOperation({
     summary: 'Retrieve request logs',
