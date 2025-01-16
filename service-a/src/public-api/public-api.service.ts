@@ -145,8 +145,17 @@ export class PublicApiService {
     return client;
   }
 
+  //TODO: think about other indexes
   private async createIndexes() {
-    const collection = this.db.collection('meals');
-    await collection.createIndex({ title: 'text' });
+    try {
+      const collection = this.db.collection('meals');
+
+      await collection.createIndex(
+        { title: 1 },
+        { unique: false, name: 'title_index' },
+      );
+    } catch (error) {
+      console.error('Error creating indexes:', error);
+    }
   }
 }
