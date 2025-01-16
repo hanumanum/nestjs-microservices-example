@@ -9,10 +9,13 @@ import {
 import { Db } from 'mongodb';
 import { firstValueFrom } from 'rxjs';
 import { createClient } from 'redis';
+import { TDBRecord, TNewDBRecord } from './types';
+import { externalApiEntryToRecord } from './utils/object.transformers';
 
 @Injectable()
 export class PublicApiService {
   private client: ClientProxy;
+  private searchURL: string;
 
   constructor(
     @Inject('MONGO_CLIENT') private readonly db: Db,
@@ -24,34 +27,80 @@ export class PublicApiService {
         servers: [process.env.NATS_URL],
       },
     });
+    this.searchURL = 'https://www.themealdb.com/api/json/v1/1/search.php?s=';
   }
 
+  //TODO: rewirte with DTO
   async searchAndSave(query: string) {
     const response = await firstValueFrom(
-      this.httpService.get(`https://openlibrary.org/search.json?q=${query}`),
+      this.httpService.get(`${this.searchURL}${query}`),
     );
-    const data = response.data;
+    const data = response?.data;
 
-    // Save to MongoDB
-    const collection = this.db.collection('search_results');
-    await collection.insertOne({ query, data, timestamp: new Date() });
+    if (data) {
+      const dbRecords: TNewDBRecord[] = data.meals.map(
+        externalApiEntryToRecord(query),
+      );
+      const collection = this.db.collection('meals');
+      const res = await collection.insertMany(dbRecords);
+      console.log(res);
+    }
 
-    // Publish an event to NATS
-    await this.client.emit('search_event', {
+    this.client.emit('search_event', {
       query,
-      resultCount: data.docs?.length || 0,
+      resultCount: data.meals?.length || 0,
       timestamp: new Date(),
     });
 
     return data;
   }
 
-  async searchStoredData(query: string) {
-    const collection = this.db.collection('search_results');
-    return await collection
-      .find({ query })
-      .project({ query: 1, timestamp: 1, 'data.docs': 1 })
+  //TODO: rewirte with DTO
+  async searchStoredData(
+    searchParams: {
+      query?: string;
+      title?: string;
+      category?: string;
+      area?: string;
+      ingridients?: string;
+      mesurments?: string;
+    },
+    page: number,
+    limit: number,
+  ) {
+    page = +page; //TODO: Remove after implemetation of DTO
+    limit = +limit; //TODO: Remove after implemetation of DTO
+
+    const collection = this.db.collection<TDBRecord>('meals');
+    const filter: Record<string, any> = {};
+    if (searchParams.query)
+      filter.query = { $regex: searchParams.query, $options: 'i' };
+    if (searchParams.title)
+      filter.title = { $regex: searchParams.title, $options: 'i' };
+    if (searchParams.category)
+      filter.cagetory = { $regex: searchParams.category, $options: 'i' };
+    if (searchParams.area)
+      filter.area = { $regex: searchParams.area, $options: 'i' };
+    if (searchParams.ingridients)
+      filter.ingridients = { $regex: searchParams.ingridients, $options: 'i' };
+    if (searchParams.mesurments)
+      filter.mesurments = { $regex: searchParams.mesurments, $options: 'i' };
+
+    const total = await collection.countDocuments(filter);
+    const results = await collection
+      .find(filter)
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .sort({ timestamp: -1 })
       .toArray();
+
+    return {
+      total,
+      page,
+      limit,
+      pages: Math.ceil(total / limit),
+      results,
+    };
   }
 
   async logRequest(query: string, executionTime: number) {
