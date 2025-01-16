@@ -30,6 +30,10 @@ export class PublicApiService {
     this.searchURL = 'https://www.themealdb.com/api/json/v1/1/search.php?s=';
   }
 
+  async onModuleInit() {
+    await this.createIndexes();
+  }
+
   //TODO: rewirte with DTO
   async searchAndSave(query: string) {
     const response = await firstValueFrom(
@@ -60,10 +64,10 @@ export class PublicApiService {
     searchParams: {
       query?: string;
       title?: string;
+      instructions?: string;
       category?: string;
       area?: string;
       ingridients?: string;
-      mesurments?: string;
     },
     page: number,
     limit: number,
@@ -75,16 +79,18 @@ export class PublicApiService {
     const filter: Record<string, any> = {};
     if (searchParams.query)
       filter.query = { $regex: searchParams.query, $options: 'i' };
-    if (searchParams.title)
-      filter.title = { $regex: searchParams.title, $options: 'i' };
+    if (searchParams.title) filter.$text = { $search: searchParams.title }; //INFO: becouse of index, see this.createIndexes()
+    if (searchParams.instructions)
+      filter.instructions = {
+        $regex: searchParams.instructions,
+        $options: 'i',
+      };
     if (searchParams.category)
       filter.cagetory = { $regex: searchParams.category, $options: 'i' };
     if (searchParams.area)
       filter.area = { $regex: searchParams.area, $options: 'i' };
     if (searchParams.ingridients)
       filter.ingridients = { $regex: searchParams.ingridients, $options: 'i' };
-    if (searchParams.mesurments)
-      filter.mesurments = { $regex: searchParams.mesurments, $options: 'i' };
 
     const total = await collection.countDocuments(filter);
     const results = await collection
@@ -137,5 +143,10 @@ export class PublicApiService {
     });
     await client.connect();
     return client;
+  }
+
+  private async createIndexes() {
+    const collection = this.db.collection('meals');
+    await collection.createIndex({ title: 'text' });
   }
 }

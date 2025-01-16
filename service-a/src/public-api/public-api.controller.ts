@@ -51,12 +51,6 @@ export class PublicApiController {
     description: 'Filter by ingredients',
   })
   @ApiQuery({
-    name: 'mesurments',
-    type: String,
-    required: false,
-    description: 'Filter by measurements',
-  })
-  @ApiQuery({
     name: 'page',
     type: Number,
     required: false,
@@ -100,15 +94,15 @@ export class PublicApiController {
   async searchStored(
     @Query('query') query?: string,
     @Query('title') title?: string,
+    @Query('instructions') instructions?: string,
     @Query('category') category?: string,
     @Query('area') area?: string,
     @Query('ingridients') ingridients?: string,
-    @Query('mesurments') mesurments?: string,
     @Query('page') page = 1,
     @Query('limit') limit = 10,
   ) {
     return await this.publicApiService.searchStoredData(
-      { query, title, category, area, ingridients, mesurments },
+      { query, title, category, area, ingridients, instructions },
       page,
       limit,
     );
