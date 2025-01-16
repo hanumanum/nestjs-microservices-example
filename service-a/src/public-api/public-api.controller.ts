@@ -107,34 +107,4 @@ export class PublicApiController {
       limit,
     );
   }
-
-  @Get('logs')
-  @ApiOperation({
-    summary: 'Retrieve request logs',
-    description:
-      'Fetches execution time logs for a specific query from RedisTimeSeries',
-  })
-  @ApiQuery({
-    name: 'q',
-    type: String,
-    description: 'Search query whose logs are to be retrieved',
-    example: 'NestJS', //TODO: reivew this example, it is not clear
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Logs retrieved successfully',
-    schema: {
-      example: [
-        { timestamp: 1678963200000, executionTime: 200 },
-        { timestamp: 1678963500000, executionTime: 150 },
-      ],
-    },
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'No logs found for the specified query',
-  })
-  async getLogs(@Query('q') query: string) {
-    return await this.publicApiService.getRequestLogs(query);
-  }
 }

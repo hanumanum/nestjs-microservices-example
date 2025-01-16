@@ -108,10 +108,6 @@ export class PublicApiService {
     };
   }
 
-  async getRequestLogs(query: string) {
-    return;
-  }
-
   //TODO: think about other indexes
   private async createIndexes() {
     try {
