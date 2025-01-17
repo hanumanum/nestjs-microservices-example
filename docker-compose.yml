@@ -44,7 +44,7 @@ services:
       REDIS_HOST: redis
       NATS_URL: nats://nats:4222
       PORT: 3000
-    command: npm run start:dev  # Use nodemon for hot-reloading
+    command: npm run start:dev
 
   service-b:
     build:
@@ -64,7 +64,7 @@ services:
       REDIS_HOST: redis
       NATS_URL: nats://nats:4222
       PORT: 3000
-    command: npm run start:dev  # Use nodemon for hot-reloading
+    command: npm run start:dev
 
 volumes:
   mongo_data:

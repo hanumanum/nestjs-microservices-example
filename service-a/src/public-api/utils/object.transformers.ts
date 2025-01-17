@@ -44,7 +44,7 @@ export const externalApiEntryToRecord =
 export const makeNATSMessage = (query: string, data: unknown): TNATSMessege => {
   return {
     query,
-    resultCount: (data as TAPIResponseEntry[])?.length || 0,
+    resultCount: (data as { meals: unknown[] })?.meals?.length || 0,
     timestamp: new Date(),
     data: data,
   };

@@ -44,15 +44,15 @@ export class PublicApiService {
     );
     const data = response?.data;
 
-    if (data) {
+    if (data && data.meals) {
       const dbRecords: TNewDBRecord[] = data.meals.map(
         externalApiEntryToRecord(query),
       );
       const collection = this.db.collection('meals');
       await collection.insertMany(dbRecords);
-    }
 
-    this.client.emit(EventTypes.SEARCH_EVENT, makeNATSMessage(query, data));
+      this.client.emit(EventTypes.SEARCH_EVENT, makeNATSMessage(query, data));
+    }
 
     return data;
   }

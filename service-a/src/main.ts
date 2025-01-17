@@ -14,14 +14,12 @@ async function bootstrap() {
   });
   await app.startAllMicroservices();
 
-  // Swagger Configuration
   const config = new DocumentBuilder()
-    .setTitle('Service A APIs')
+    .setTitle('Service-A APIs')
     .setDescription(
-      'APIs for Service A including public API integrations and MongoDB queries',
+      'APIs for Service-A including public API integrations and MongoDB queries',
     )
     .setVersion('1.0')
-    .addTag('public-api') // Tag for grouping related APIs
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
