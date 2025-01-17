@@ -1,4 +1,4 @@
-import { TAPIResponseEntry, TNewDBRecord } from '../types';
+import { TAPIResponseEntry, TNATSMessege, TNewDBRecord } from '../types';
 
 const extractIngiridentsAndMesurments = (
   entry: TAPIResponseEntry,
@@ -40,3 +40,12 @@ export const externalApiEntryToRecord =
       timestamp: new Date(),
     } as TNewDBRecord;
   };
+
+export const makeNATSMessage = (query: string, data: unknown): TNATSMessege => {
+  return {
+    query,
+    resultCount: (data as TAPIResponseEntry[])?.length || 0,
+    timestamp: new Date(),
+    data: data,
+  };
+};

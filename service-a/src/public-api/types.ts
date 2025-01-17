@@ -73,3 +73,19 @@ export type TNewDBRecord = Omit<TDBRecord, '_id'>;
 export type TAPIResponse = {
   meals: TAPIResponseEntry[];
 };
+
+export type TNATSMessege = {
+  query: string;
+  resultCount: number;
+  timestamp: Date;
+  data: unknown;
+};
+
+export type TSearchStoredDataParams = {
+  query?: string;
+  title?: string;
+  instructions?: string;
+  category?: string;
+  area?: string;
+  ingridients?: string;
+};

@@ -8,8 +8,12 @@ import {
 } from '@nestjs/microservices';
 import { Db } from 'mongodb';
 import { firstValueFrom } from 'rxjs';
-import { TDBRecord, TNewDBRecord } from './types';
-import { externalApiEntryToRecord } from './utils/object.transformers';
+import { TDBRecord, TNewDBRecord, TSearchStoredDataParams } from './types';
+import {
+  externalApiEntryToRecord,
+  makeNATSMessage,
+} from './utils/object.transformers';
+import { EventTypes } from './utils/event.types';
 
 @Injectable()
 export class PublicApiService {
@@ -45,29 +49,17 @@ export class PublicApiService {
         externalApiEntryToRecord(query),
       );
       const collection = this.db.collection('meals');
-      const res = await collection.insertMany(dbRecords);
-      console.log(res);
+      await collection.insertMany(dbRecords);
     }
 
-    this.client.emit('search_event', {
-      query,
-      resultCount: data.meals?.length || 0,
-      timestamp: new Date(),
-    });
+    this.client.emit(EventTypes.SEARCH_EVENT, makeNATSMessage(query, data));
 
     return data;
   }
 
   //TODO: rewirte with DTO
   async searchStoredData(
-    searchParams: {
-      query?: string;
-      title?: string;
-      instructions?: string;
-      category?: string;
-      area?: string;
-      ingridients?: string;
-    },
+    searchParams: TSearchStoredDataParams,
     page: number,
     limit: number,
   ) {
