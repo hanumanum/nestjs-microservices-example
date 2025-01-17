@@ -33,6 +33,12 @@ export class PublicApiController {
     description: 'Filter by title',
   })
   @ApiQuery({
+    name: 'instructions',
+    type: String,
+    required: false,
+    description: 'Filter by instructions',
+  })
+  @ApiQuery({
     name: 'category',
     type: String,
     required: false,
